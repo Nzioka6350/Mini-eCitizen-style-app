@@ -1,41 +1,47 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api'; // Make sure this path is correct
-
-const subCounties = ['Kiharu', 'Kangema', 'Mathioya', 'Kigumo', 'Kandara', 'Gatanga', 'Maragwa', "Murang'a South (Kambiti)"];
+import api from '../services/api';
 
 const Landing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // State for dynamic services
   const [services, setServices] = useState([]);
+  const [subCounties, setSubCounties] = useState([]); // <-- ADDED
   const [loading, setLoading] = useState(true);
 
-  // Fetch services when component mounts
   useEffect(() => {
-    const fetchServices = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/services');
-        setServices(response.data);
+        // Fetch both in parallel
+        const [servicesRes, subCountiesRes] = await Promise.all([
+          api.get('/services'),
+          api.get('/subcounties'),
+        ]);
+        setServices(servicesRes.data);
+        setSubCounties(subCountiesRes.data); // <-- STORE
       } catch (error) {
-        console.error('Failed to fetch services:', error);
+        console.error('Failed to fetch data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchServices();
+    fetchData();
   }, []);
 
   const handleApply = (service) => {
     if (!user) {
-      // If not logged in, send to login/register
       navigate('/login');
     } else {
-      // If logged in, go to the new request form, passing the service details
-      navigate('/new-request', { state: { category: service.category, title: service.title } });
+      navigate('/new-request', { 
+        state: { 
+          serviceId: service._id,
+          category: service.category, 
+          title: service.title 
+        } 
+      });
     }
   };
 
@@ -54,7 +60,7 @@ const Landing = () => {
           </div>
           <div style={styles.rightActions}>
             {user ? (
-              <button onClick={() => navigate('/dashboard')} style={styles.primaryBtn}>
+              <button onClick={() => navigate(user.role === 'admin' ? '/admin' : '/dashboard')} style={styles.primaryBtn}>
                 Go to Dashboard
               </button>
             ) : (
@@ -86,7 +92,6 @@ const Landing = () => {
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 2rem' }}>
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>Available services</h2>
-          {/* Dynamically show count */}
           <span style={styles.serviceCount}>{services.length} services</span>
         </div>
 
@@ -105,7 +110,6 @@ const Landing = () => {
                 <div style={styles.cardFooter}>
                   <div style={styles.cardMeta}>
                     <span style={styles.fee}>{service.fee}</span>
-                    {/* Changed service.time to service.processingTime to match backend model */}
                     <span style={styles.time}>🕒 {service.processingTime}</span>
                   </div>
                   <button 
@@ -120,12 +124,12 @@ const Landing = () => {
           </div>
         )}
 
-        {/* SUB-COUNTIES */}
+        {/* SUB-COUNTIES (from DB) */}
         <div style={{ marginTop: '4rem' }}>
           <h3 style={styles.sectionTitle}>Sub-counties served</h3>
           <div style={styles.subCountyList}>
-            {subCounties.map((county, index) => (
-              <span key={index} style={styles.subCountyPill}>{county}</span>
+            {subCounties.map((county) => (
+              <span key={county._id} style={styles.subCountyPill}>{county.name}</span>
             ))}
           </div>
         </div>
@@ -145,16 +149,7 @@ const styles = {
   textBtn: { background: 'none', border: 'none', color: 'var(--text-dark)', fontWeight: '500', cursor: 'pointer' },
   primaryBtn: { backgroundColor: 'var(--primary-green)', color: 'white', padding: '0.5rem 1rem', borderRadius: '6px', border: 'none', fontWeight: '600', cursor: 'pointer' },
   
-  hero: { 
-    position: 'relative', 
-    height: '450px', 
-    backgroundColor: '#2a4f3a',
-    backgroundImage: 'url("https://images.unsplash.com/photo-1589923188900-85dae523342b?q=80&w=2070&auto=format&fit=crop")',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    display: 'flex',
-    alignItems: 'center',
-  },
+  hero: { position: 'relative', height: '450px', backgroundColor: '#2a4f3a', backgroundImage: 'url("https://images.unsplash.com/photo-1589923188900-85dae523342b?q=80&w=2070&auto=format&fit=crop")', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center' },
   heroOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)' },
   heroContent: { position: 'relative', zIndex: 1, maxWidth: '1200px', margin: '0 auto', padding: '0 2rem', width: '100%' },
   heroBadge: { backgroundColor: '#f5c14e', color: '#000', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '1rem' },
@@ -162,7 +157,6 @@ const styles = {
   heroSubtitle: { color: '#e5e7eb', fontSize: '1.1rem', maxWidth: '600px', marginBottom: '2rem' },
   searchContainer: { backgroundColor: 'white', borderRadius: '8px', display: 'flex', maxWidth: '500px', padding: '0.2rem' },
   searchInput: { flex: 1, padding: '0.8rem 1rem', border: 'none', borderRadius: '8px', outline: 'none', fontSize: '0.9rem' },
-
   sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' },
   sectionTitle: { fontSize: '1.5rem', fontWeight: '800' },
   serviceCount: { color: 'var(--text-muted)', fontSize: '0.9rem' },
@@ -176,7 +170,6 @@ const styles = {
   fee: { fontWeight: '700', fontSize: '0.85rem', color: 'var(--text-dark)' },
   time: { fontSize: '0.75rem', color: 'var(--text-muted)' },
   applyBtn: { background: 'none', border: 'none', color: 'var(--primary-green)', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' },
-  
   subCountyList: { display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' },
   subCountyPill: { backgroundColor: '#fff', border: '1px solid var(--border-color)', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem' }
 };

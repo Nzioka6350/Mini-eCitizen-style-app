@@ -7,6 +7,7 @@ import MyRequests from './pages/MyRequests';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute'; 
+import NewRequest from './pages/NewRequest'; 
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           {/* Citizen Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<MyRequests />} /> 
+            <Route path="/new-request" element={<NewRequest />} /> 
             <Route path="/new-request" element={<div style={{ padding: '2rem' }}>Request form coming next!</div>} /> 
             <Route path="/request/:id" element={<div style={{ padding: '2rem' }}>Request details coming next!</div>} /> 
           </Route>

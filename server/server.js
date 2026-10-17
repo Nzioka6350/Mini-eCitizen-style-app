@@ -11,6 +11,7 @@ import authRoutes from './routes/authRoutes.js';
 import serviceRoutes from './routes/serviceRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
 import adminRoutes from './routes/adminRoutes.js'; 
+import subCountyRoutes from './routes/subCountyRoutes.js';
 connectDB();
 
 
@@ -44,7 +45,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/admin', adminRoutes); 
 app.use('/api/services', serviceRoutes);
-
+app.use('/api/subcounties', subCountyRoutes);
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
