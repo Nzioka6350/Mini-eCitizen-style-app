@@ -46,7 +46,6 @@ const Landing = () => {
   };
 
   return (
-    // <-- Wrapper with flex column so Footer sits at bottom
     <div style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
       {/* 1. PUBLIC NAVBAR */}
@@ -89,7 +88,7 @@ const Landing = () => {
         </div>
       </div>
 
-      {/* 3. SERVICES GRID (flex: 1 pushes footer down) */}
+      {/* 3. SERVICES GRID */}
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 2rem', flex: 1 }}>
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>Available services</h2>
@@ -125,7 +124,37 @@ const Landing = () => {
           </div>
         )}
 
-        {/* SUB-COUNTIES (from DB) */}
+        {/* 4. ABOUT US SECTION (NEW) */}
+        <section style={styles.aboutSection}>
+          <div style={styles.aboutText}>
+            <span style={styles.aboutBadge}>About Us</span>
+            <h2 style={styles.aboutTitle}>Serving Murang'a with transparency and efficiency.</h2>
+            <p style={styles.aboutDescription}>
+              Murang'a e-Huduma is the official digital gateway to county services. Our goal is to eliminate long queues and bring government closer to every citizen — from the heart of Murang'a town to the farthest corners of Kambiti.
+            </p>
+            <p style={styles.aboutDescription}>
+              Submit requests, track progress in real-time, and receive responses from county officers without leaving your home. We are committed to building a responsive, accountable county government.
+            </p>
+          </div>
+          <div style={styles.aboutCard}>
+            <div style={styles.aboutStat}>
+              <span style={styles.aboutStatNumber}>{subCounties.length}</span>
+              <span style={styles.aboutStatLabel}>Sub-counties served</span>
+            </div>
+            <div style={styles.aboutStatDivider}></div>
+            <div style={styles.aboutStat}>
+              <span style={styles.aboutStatNumber}>{services.length}</span>
+              <span style={styles.aboutStatLabel}>Active services</span>
+            </div>
+            <div style={styles.aboutStatDivider}></div>
+            <div style={styles.aboutStat}>
+              <span style={styles.aboutStatNumber}>24/7</span>
+              <span style={styles.aboutStatLabel}>Online access</span>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. SUB-COUNTIES */}
         <div style={{ marginTop: '4rem' }}>
           <h3 style={styles.sectionTitle}>Sub-counties served</h3>
           <div style={styles.subCountyList}>
@@ -136,7 +165,7 @@ const Landing = () => {
         </div>
       </main>
 
-      {/* 4. FOOTER */}
+      {/* 6. FOOTER */}
       <Footer />
     </div>
   );
@@ -175,6 +204,76 @@ const styles = {
   fee: { fontWeight: '700', fontSize: '0.85rem', color: 'var(--text-dark)' },
   time: { fontSize: '0.75rem', color: 'var(--text-muted)' },
   applyBtn: { background: 'none', border: 'none', color: 'var(--primary-green)', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' },
+
+  // ---- About Us ----
+  aboutSection: {
+    marginTop: '5rem',
+    backgroundColor: '#ffffff',
+    borderRadius: '16px',
+    padding: '3rem',
+    display: 'flex',
+    gap: '3rem',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    border: '1px solid var(--border-color)',
+  },
+  aboutText: { flex: 2, minWidth: '300px' },
+  aboutBadge: {
+    backgroundColor: '#e8f3ec',
+    color: 'var(--primary-green)',
+    padding: '0.3rem 0.8rem',
+    borderRadius: '20px',
+    fontSize: '0.75rem',
+    fontWeight: '700',
+    display: 'inline-block',
+    marginBottom: '1rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  aboutTitle: {
+    fontSize: '1.75rem',
+    fontWeight: '800',
+    color: 'var(--text-dark)',
+    marginBottom: '1rem',
+    lineHeight: '1.3',
+  },
+  aboutDescription: {
+    fontSize: '0.95rem',
+    color: 'var(--text-muted)',
+    lineHeight: '1.7',
+    marginBottom: '1rem',
+  },
+  aboutCard: {
+    flex: 1,
+    minWidth: '220px',
+    backgroundColor: '#f9fafb',
+    borderRadius: '12px',
+    padding: '2rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.25rem',
+    border: '1px solid var(--border-color)',
+  },
+  aboutStat: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  aboutStatNumber: {
+    fontSize: '2rem',
+    fontWeight: '800',
+    color: 'var(--primary-green)',
+    lineHeight: '1',
+    marginBottom: '0.25rem',
+  },
+  aboutStatLabel: {
+    fontSize: '0.85rem',
+    color: 'var(--text-muted)',
+    fontWeight: '500',
+  },
+  aboutStatDivider: {
+    height: '1px',
+    backgroundColor: 'var(--border-color)',
+  },
 
   subCountyList: { display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' },
   subCountyPill: { backgroundColor: '#fff', border: '1px solid var(--border-color)', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem' }
