@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-global.crypto = crypto;  // Polyfill for bcryptjs on Node 20+
+global.crypto = crypto; 
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -8,7 +8,9 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
-
+import serviceRoutes from './routes/serviceRoutes.js';
+import requestRoutes from './routes/requestRoutes.js';
+import adminRoutes from './routes/adminRoutes.js'; 
 connectDB();
 
 
@@ -38,6 +40,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/requests', requestRoutes);
+app.use('/api/admin', adminRoutes); 
+app.use('/api/services', serviceRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');
