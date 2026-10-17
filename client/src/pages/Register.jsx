@@ -10,8 +10,9 @@ const Register = () => {
     password: ''
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -22,11 +23,13 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setIsLoading(true);
-    
+
     try {
       await register(formData);
-      navigate('/dashboard');
+      setSuccess('Account created successfully. Redirecting to login...');
+      setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create account');
     } finally {
@@ -41,9 +44,19 @@ const Register = () => {
           <h1>Create citizen account</h1>
           <p>Register once to access all county services.</p>
         </div>
-        
-        {error && <div style={{ color: 'var(--danger)', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
-        
+
+        {error && (
+          <div style={{ color: 'var(--danger)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div style={{ color: 'var(--primary-green)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+            {success}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Full name</label>
@@ -65,7 +78,7 @@ const Register = () => {
             {isLoading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
-        
+
         <div className="auth-footer">
           Already registered? <Link to="/login">Sign in</Link>
         </div>

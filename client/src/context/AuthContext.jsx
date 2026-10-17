@@ -9,7 +9,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on initial load
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -26,9 +25,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
+    // Just create the account — do NOT auto-login
     const response = await api.post('/auth/register', userData);
-    localStorage.setItem('user', JSON.stringify(response.data));
-    setUser(response.data);
     return response.data;
   };
 
