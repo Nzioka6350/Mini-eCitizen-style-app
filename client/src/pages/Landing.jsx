@@ -1,21 +1,33 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-// PLACEHOLDER DATA - Later this will be fetched from the backend via Admin
-const placeholderServices = [
-  { category: 'Lands, Housing & Physical Planning', title: 'Building Plan Approval', description: 'Approval of architectural and structural plans before construction.', fee: 'KES 10,000', time: '~30 days' },
-  { category: 'Education & Youth', title: 'County Bursary Application', description: 'Financial support for needy students in secondary and tertiary institutions.', fee: 'Free', time: '~30 days' },
-  { category: 'Disaster Management', title: 'Fire Safety Certificate', description: 'Inspection and certification of premises for fire safety compliance.', fee: 'KES 2,500', time: '~10 days' },
-  { category: 'Health Services', title: 'Food Hygiene Licence', description: 'Licence for premises that handle, prepare or sell food.', fee: 'KES 1,500', time: '~7 days' },
-  { category: 'Finance & Revenue', title: 'Land Rates Clearance Certificate', description: 'Certificate confirming land rates are fully paid, needed for transfers.', fee: 'KES 1,000', time: '~5 days' },
-  { category: 'Trade & Industrialization', title: 'Liquor Licence', description: 'Licence to sell alcoholic drinks, issued under the county liquor act.', fee: 'KES 15,000', time: '~21 days' },
-];
+import api from '../services/api'; // Make sure this path is correct
 
 const subCounties = ['Kiharu', 'Kangema', 'Mathioya', 'Kigumo', 'Kandara', 'Gatanga', 'Maragwa', "Murang'a South (Kambiti)"];
 
 const Landing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // State for dynamic services
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch services when component mounts
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await api.get('/services');
+        setServices(response.data);
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   const handleApply = (service) => {
     if (!user) {
@@ -57,7 +69,6 @@ const Landing = () => {
 
       {/* 2. HERO SECTION */}
       <div style={styles.hero}>
-        {/* Overlay for text readability */}
         <div style={styles.heroOverlay}></div>
         <div style={styles.heroContent}>
           <span style={styles.heroBadge}>Huduma bora, mahali popote</span>
@@ -75,31 +86,39 @@ const Landing = () => {
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 2rem' }}>
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>Available services</h2>
-          <span style={styles.serviceCount}>10 services</span>
+          {/* Dynamically show count */}
+          <span style={styles.serviceCount}>{services.length} services</span>
         </div>
 
-        <div style={styles.grid}>
-          {placeholderServices.map((service, index) => (
-            <div key={index} style={styles.card}>
-              <div style={styles.cardCategory}>{service.category}</div>
-              <h3 style={styles.cardTitle}>{service.title}</h3>
-              <p style={styles.cardDescription}>{service.description}</p>
-              
-              <div style={styles.cardFooter}>
-                <div style={styles.cardMeta}>
-                  <span style={styles.fee}>{service.fee}</span>
-                  <span style={styles.time}>🕒 {service.time}</span>
+        {loading ? (
+          <p style={{ color: 'var(--text-muted)' }}>Loading services...</p>
+        ) : services.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>No services available at the moment. Please check back later.</p>
+        ) : (
+          <div style={styles.grid}>
+            {services.map((service) => (
+              <div key={service._id} style={styles.card}>
+                <div style={styles.cardCategory}>{service.category}</div>
+                <h3 style={styles.cardTitle}>{service.title}</h3>
+                <p style={styles.cardDescription}>{service.description}</p>
+                
+                <div style={styles.cardFooter}>
+                  <div style={styles.cardMeta}>
+                    <span style={styles.fee}>{service.fee}</span>
+                    {/* Changed service.time to service.processingTime to match backend model */}
+                    <span style={styles.time}>🕒 {service.processingTime}</span>
+                  </div>
+                  <button 
+                    onClick={() => handleApply(service)}
+                    style={styles.applyBtn}
+                  >
+                    Apply →
+                  </button>
                 </div>
-                <button 
-                  onClick={() => handleApply(service)}
-                  style={styles.applyBtn}
-                >
-                  Apply →
-                </button>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* SUB-COUNTIES */}
         <div style={{ marginTop: '4rem' }}>
@@ -130,7 +149,6 @@ const styles = {
     position: 'relative', 
     height: '450px', 
     backgroundColor: '#2a4f3a',
-    // Using a placeholder image for the tea plantation. You can replace this with a local image later.
     backgroundImage: 'url("https://images.unsplash.com/photo-1589923188900-85dae523342b?q=80&w=2070&auto=format&fit=crop")',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
