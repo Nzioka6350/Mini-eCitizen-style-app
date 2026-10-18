@@ -46,9 +46,16 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/admin', adminRoutes); 
 app.use('/api/services', serviceRoutes);
 app.use('/api/subcounties', subCountyRoutes);
+
+//Test backend is running
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
+
+// Only listen locally, Vercel handles the server in production
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => console.log(`Server started on port ${port}`));
+}
 
 // app.listen(port, () => console.log(`Server started on port ${port}`));
 export default app;
