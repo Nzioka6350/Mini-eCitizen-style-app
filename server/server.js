@@ -10,6 +10,12 @@ import requestRoutes from './routes/requestRoutes.js';
 import adminRoutes from './routes/adminRoutes.js'; 
 import subCountyRoutes from './routes/subCountyRoutes.js';
 
+// ONLY load dotenv if we are running locally
+if (process.env.NODE_ENV !== 'production') {
+  const dotenv = await import('dotenv');
+  dotenv.config();
+}
+
 // Connect to MongoDB
 connectDB();
 
