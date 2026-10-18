@@ -1,6 +1,3 @@
-import crypto from 'crypto';
-global.crypto = crypto; 
-
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -12,8 +9,9 @@ import serviceRoutes from './routes/serviceRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
 import adminRoutes from './routes/adminRoutes.js'; 
 import subCountyRoutes from './routes/subCountyRoutes.js';
-connectDB();
 
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -27,7 +25,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like Postman)
+    // Allow requests with no origin (like Postman or mobile apps)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
@@ -37,17 +35,18 @@ app.use(cors({
   },
   credentials: true,
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/admin', adminRoutes); 
-app.use('/api/services', serviceRoutes);
-app.use('/api/subcounties', subCountyRoutes);
+app.use('/api/subcounties', subCountyRoutes); // Fixed: removed the duplicate services route
 
-//Test backend is running
+// Health check
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
@@ -57,5 +56,4 @@ if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => console.log(`Server started on port ${port}`));
 }
 
-// app.listen(port, () => console.log(`Server started on port ${port}`));
 export default app;
