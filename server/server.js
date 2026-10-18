@@ -10,12 +10,10 @@ import requestRoutes from './routes/requestRoutes.js';
 import adminRoutes from './routes/adminRoutes.js'; 
 import subCountyRoutes from './routes/subCountyRoutes.js';
 
-// ONLY load dotenv if we are running locally
-if (process.env.NODE_ENV !== 'production') {
-  const dotenv = await import('dotenv');
-  dotenv.config();
-}
-
+// Force the environment variables to be available (Vercel is failing to inject them)
+process.env.MONGODB_URI = 'mongodb+srv://jamesnziokamutua1_db_user:F6shE1tBpniLRFas@miniecitizen.23atrc8.mongodb.net/test?retryWrites=true&w=majority';
+process.env.JWT_SECRET = 'testing';
+process.env.CLIENT_URL = 'https://mini-e-citizen-style-app-rfii.vercel.app';
 // Connect to MongoDB
 connectDB();
 
