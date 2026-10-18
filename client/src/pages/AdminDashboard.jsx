@@ -12,8 +12,8 @@ const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState({ total: 0, pending: 0, inProgress: 0, resolved: 0, open: 0 });
   const [requests, setRequests] = useState([]);
   const [services, setServices] = useState([]);
-  const [subCounties, setSubCounties] = useState([]);        // <-- NEW
-  const [subCountyName, setSubCountyName] = useState('');    // <-- NEW
+  const [subCounties, setSubCounties] = useState([]);        
+  const [subCountyName, setSubCountyName] = useState('');    
   const [formData, setFormData] = useState({ category: '', title: '', description: '', fee: '', processingTime: '' });
   const [loading, setLoading] = useState(true);
 
@@ -24,12 +24,12 @@ const AdminDashboard = () => {
         api.get('/admin/analytics'),
         api.get('/admin/requests'),
         api.get('/services'),
-        api.get('/subcounties') // <-- NEW
+        api.get('/subcounties') 
       ]);
       setAnalytics(analyticsRes.data);
       setRequests(requestsRes.data);
       setServices(servicesRes.data);
-      setSubCounties(subCountiesRes.data); // <-- NEW
+      setSubCounties(subCountiesRes.data); 
     } catch (error) {
       console.error('Failed to fetch admin data', error);
     } finally {
@@ -77,7 +77,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // ---- Sub-county handlers ----
   const handleAddSubCounty = async (e) => {
     e.preventDefault();
     if (!subCountyName.trim()) return;
@@ -100,7 +99,6 @@ const AdminDashboard = () => {
       }
     }
   };
-  // -----------------------------
 
   const getStatusColor = (status) => {
     if (status === 'Pending') return { backgroundColor: '#fef3c7', color: '#d97706' };
@@ -187,15 +185,25 @@ const AdminDashboard = () => {
                         </span>
                       </td>
                       <td style={styles.td}>
-                        <select 
-                          value={req.status} 
-                          onChange={(e) => handleStatusUpdate(req._id, e.target.value)}
-                          style={styles.statusSelect}
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="In Progress">In Progress</option>
-                          <option value="Resolved">Resolved</option>
-                        </select>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <select 
+                            value={req.status} 
+                            onChange={(e) => handleStatusUpdate(req._id, e.target.value)}
+                            style={styles.statusSelect}
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Resolved">Resolved</option>
+                          </select>
+                          
+                          {/* NEW VIEW BUTTON */}
+                          <button 
+                            onClick={() => navigate(`/request/${req._id}`)}
+                            style={styles.viewBtn}
+                          >
+                            View
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -308,6 +316,7 @@ const styles = {
   td: { padding: '1rem', fontSize: '0.9rem', verticalAlign: 'middle' },
   statusBadge: { padding: '0.35rem 0.75rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', display: 'inline-block' },
   statusSelect: { padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '0.85rem', cursor: 'pointer', outline: 'none' },
+  viewBtn: { backgroundColor: '#e8f3ec', color: 'var(--primary-green)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' },
   formCard: { flex: 1, minWidth: '300px', backgroundColor: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', height: 'fit-content' },
   serviceItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--border-color)' },
   deleteBtn: { backgroundColor: '#fee2e2', color: '#ef4444', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }
