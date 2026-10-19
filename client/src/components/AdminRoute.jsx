@@ -17,7 +17,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   
   const [activeTab, setActiveTab] = useState('requests');
-  // Added totalUsers to the initial state
   const [analytics, setAnalytics] = useState({ total: 0, pending: 0, inProgress: 0, resolved: 0, open: 0, totalUsers: 0 });
   const [requests, setRequests] = useState([]);
   const [services, setServices] = useState([]);
@@ -25,6 +24,10 @@ const AdminDashboard = () => {
   const [subCountyName, setSubCountyName] = useState('');    
   const [formData, setFormData] = useState({ category: '', title: '', description: '', fee: '', processingTime: '' });
   const [loading, setLoading] = useState(true);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const requestsPerPage = 5; // 
 
   const fetchData = async () => {
     setLoading(true);
@@ -53,6 +56,11 @@ const AdminDashboard = () => {
     }
     fetchData();
   }, [user, navigate]);
+
+  // Reset to page 1 whenever the requests list changes (e.g., new request added)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [requests]);
 
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
@@ -116,6 +124,21 @@ const AdminDashboard = () => {
     return {};
   };
 
+  // --- PAGINATION LOGIC ---
+  const indexOfLastRequest = currentPage * requestsPerPage;
+  const indexOfFirstRequest = indexOfLastRequest - requestsPerPage;
+  const currentRequests = requests.slice(indexOfFirstRequest, indexOfLastRequest);
+  const totalPages = Math.ceil(requests.length / requestsPerPage);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+  // -------------------------
+
   return (
     <div style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh' }}>
       <AppNavbar />
@@ -132,7 +155,7 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        {/* STATS GRID (Now includes Total Users) */}
+        {/* STATS GRID */}
         <div style={styles.statsGrid}>
           <div style={styles.statCard}>
             <span style={styles.statLabel}>Total Requests</span>
@@ -168,71 +191,101 @@ const AdminDashboard = () => {
           <p>Loading panel...</p>
 
         ) : activeTab === 'requests' ? (
-          <div style={styles.tableContainer}>
-            <table style={styles.table}>
-              <thead>
-                <tr style={styles.tableHeader}>
-                  <th style={styles.th}>Citizen</th>
-                  <th style={styles.th}>Issue Details</th>
-                  <th style={styles.th}>Location</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requests.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                      No requests have been made yet.
-                    </td>
+          <>
+            <div style={styles.tableContainer}>
+              <table style={styles.table}>
+                <thead>
+                  <tr style={styles.tableHeader}>
+                    <th style={styles.th}>Citizen</th>
+                    <th style={styles.th}>Issue Details</th>
+                    <th style={styles.th}>Location</th>
+                    <th style={styles.th}>Status</th>
+                    <th style={styles.th}>Action</th>
                   </tr>
-                ) : (
-                  requests.map(req => (
-                    <tr key={req._id} style={styles.tr}>
-                      <td style={styles.td}>
-                        <div style={{ fontWeight: '600' }}>{req.userId?.name}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{req.userId?.email}</div>
-                      </td>
-                      <td style={styles.td}>
-                        <div style={{ fontWeight: '600' }}>{req.title}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{req.category}</div>
-                      </td>
-                      <td style={styles.td}>
-                        <div>{req.location.subCounty}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{req.location.landmark}</div>
-                      </td>
-                      <td style={styles.td}>
-                        <span style={{ ...styles.statusBadge, ...getStatusColor(req.status) }}>
-                          {req.status}
-                        </span>
-                      </td>
-                      <td style={styles.td}>
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                          <select 
-                            value={req.status} 
-                            onChange={(e) => handleStatusUpdate(req._id, e.target.value)}
-                            style={styles.statusSelect}
-                          >
-                            <option value="Pending">Pending</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Resolved">Resolved</option>
-                          </select>
-                          
-                          <button 
-                            onClick={() => navigate(`/request/${req._id}`)}
-                            style={styles.viewBtn}
-                          >
-                            View
-                          </button>
-                        </div>
+                </thead>
+                <tbody>
+                  {requests.length === 0 ? (
+                    <tr>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                        No requests have been made yet.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  ) : (
+                    // Render currentRequests instead of requests
+                    currentRequests.map(req => (
+                      <tr key={req._id} style={styles.tr}>
+                        <td style={styles.td}>
+                          <div style={{ fontWeight: '600' }}>{req.userId?.name}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{req.userId?.email}</div>
+                        </td>
+                        <td style={styles.td}>
+                          <div style={{ fontWeight: '600' }}>{req.title}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{req.category}</div>
+                        </td>
+                        <td style={styles.td}>
+                          <div>{req.location.subCounty}</div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{req.location.landmark}</div>
+                        </td>
+                        <td style={styles.td}>
+                          <span style={{ ...styles.statusBadge, ...getStatusColor(req.status) }}>
+                            {req.status}
+                          </span>
+                        </td>
+                        <td style={styles.td}>
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <select 
+                              value={req.status} 
+                              onChange={(e) => handleStatusUpdate(req._id, e.target.value)}
+                              style={styles.statusSelect}
+                            >
+                              <option value="Pending">Pending</option>
+                              <option value="In Progress">In Progress</option>
+                              <option value="Resolved">Resolved</option>
+                            </select>
+                            
+                            <button 
+                              onClick={() => navigate(`/request/${req._id}`)}
+                              style={styles.viewBtn}
+                            >
+                              View
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
+            {/* PAGINATION CONTROLS */}
+            {requests.length > 0 && (
+              <div style={styles.paginationContainer}>
+                <span style={styles.pageInfo}>
+                  Showing {indexOfFirstRequest + 1}-{Math.min(indexOfLastRequest, requests.length)} of {requests.length} requests
+                </span>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <button 
+                    onClick={prevPage} 
+                    disabled={currentPage === 1}
+                    style={currentPage === 1 ? styles.pageBtnDisabled : styles.pageBtn}
+                  >
+                    Previous
+                  </button>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-dark)' }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button 
+                    onClick={nextPage} 
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    style={currentPage === totalPages || totalPages === 0 ? styles.pageBtnDisabled : styles.pageBtn}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         ) : activeTab === 'services' ? (
           <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
             <div style={styles.formCard}>
@@ -320,7 +373,6 @@ const AdminDashboard = () => {
 };
 
 const styles = {
-  // Adjusted minmax to 220px so all 4 cards fit nicely in a row on standard screens
   statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' },
   statCard: { backgroundColor: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.5rem' },
   statLabel: { fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '500' },
@@ -339,7 +391,43 @@ const styles = {
   viewBtn: { backgroundColor: '#e8f3ec', color: 'var(--primary-green)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' },
   formCard: { flex: 1, minWidth: '300px', backgroundColor: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', height: 'fit-content' },
   serviceItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: '1.25rem', borderRadius: '8px', border: '1px solid var(--border-color)' },
-  deleteBtn: { backgroundColor: '#fee2e2', color: '#ef4444', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' }
+  deleteBtn: { backgroundColor: '#fee2e2', color: '#ef4444', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' },
+
+  // PAGINATION STYLES
+  paginationContainer: { 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginTop: '1.5rem', 
+    padding: '1rem', 
+    backgroundColor: '#fff',
+    borderRadius: '8px',
+    border: '1px solid var(--border-color)'
+  },
+  pageInfo: { 
+    fontSize: '0.85rem', 
+    color: 'var(--text-muted)' 
+  },
+  pageBtn: { 
+    backgroundColor: 'var(--primary-green)', 
+    color: 'white', 
+    border: 'none', 
+    padding: '0.4rem 1rem', 
+    borderRadius: '4px', 
+    cursor: 'pointer', 
+    fontWeight: '600', 
+    fontSize: '0.85rem' 
+  },
+  pageBtnDisabled: { 
+    backgroundColor: '#e5e7eb', 
+    color: '#9ca3af', 
+    border: 'none', 
+    padding: '0.4rem 1rem', 
+    borderRadius: '4px', 
+    cursor: 'not-allowed', 
+    fontWeight: '600', 
+    fontSize: '0.85rem' 
+  }
 };
 
 export default AdminDashboard;
