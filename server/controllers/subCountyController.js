@@ -1,10 +1,12 @@
-import SubCounty from '../models/SubCounty.js';
+import SubCounty from "../models/SubCounty.js";
 
 // @desc    Get all active sub-counties (Public)
 // @route   GET /api/subcounties
 export const getSubCounties = async (req, res) => {
   try {
-    const subCounties = await SubCounty.find({ isActive: true }).sort({ name: 1 });
+    const subCounties = await SubCounty.find({ isActive: true }).sort({
+      name: 1,
+    });
     res.json(subCounties);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -16,10 +18,11 @@ export const getSubCounties = async (req, res) => {
 export const createSubCounty = async (req, res) => {
   try {
     const { name } = req.body;
-    if (!name) return res.status(400).json({ message: 'Name is required' });
+    if (!name) return res.status(400).json({ message: "Name is required" });
 
     const exists = await SubCounty.findOne({ name });
-    if (exists) return res.status(400).json({ message: 'Sub-county already exists' });
+    if (exists)
+      return res.status(400).json({ message: "Sub-county already exists" });
 
     const subCounty = await SubCounty.create({ name });
     res.status(201).json(subCounty);
@@ -33,11 +36,12 @@ export const createSubCounty = async (req, res) => {
 export const deleteSubCounty = async (req, res) => {
   try {
     const subCounty = await SubCounty.findById(req.params.id);
-    if (!subCounty) return res.status(404).json({ message: 'Sub-county not found' });
+    if (!subCounty)
+      return res.status(404).json({ message: "Sub-county not found" });
 
     subCounty.isActive = false;
     await subCounty.save();
-    res.json({ message: 'Sub-county removed' });
+    res.json({ message: "Sub-county removed" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

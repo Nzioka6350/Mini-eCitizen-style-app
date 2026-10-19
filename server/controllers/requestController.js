@@ -1,18 +1,19 @@
-import ServiceRequest from '../models/ServiceRequest.js';
-import RequestHistory from '../models/RequestHistory.js';
-import Service from '../models/Service.js';
+import ServiceRequest from "../models/ServiceRequest.js";
+import RequestHistory from "../models/RequestHistory.js";
+import Service from "../models/Service.js";
 
 // @desc    Create a new service request
 // @route   POST /api/requests
 // @access  Private (Citizen)
 export const createRequest = async (req, res) => {
   try {
-    const { serviceId, title, category, subCounty, landmark, description } = req.body;
+    const { serviceId, title, category, subCounty, landmark, description } =
+      req.body;
 
     // Verify the service exists
     const service = await Service.findById(serviceId);
     if (!service) {
-      return res.status(404).json({ message: 'Service not found' });
+      return res.status(404).json({ message: "Service not found" });
     }
 
     // Create the request
@@ -23,7 +24,7 @@ export const createRequest = async (req, res) => {
       category,
       location: { subCounty, landmark },
       description,
-      status: 'Pending'
+      status: "Pending",
     });
 
     // Create the initial history entry
@@ -31,8 +32,8 @@ export const createRequest = async (req, res) => {
       requestId: newRequest._id,
       changedBy: req.user._id,
       previousStatus: null,
-      newStatus: 'Pending',
-      note: 'Request submitted by citizen'
+      newStatus: "Pending",
+      note: "Request submitted by citizen",
     });
 
     res.status(201).json(newRequest);
@@ -48,8 +49,8 @@ export const getMyRequests = async (req, res) => {
   try {
     const requests = await ServiceRequest.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
-      .populate('serviceId', 'title category'); // Populate service info if needed
-    
+      .populate("serviceId", "title category"); // Populate service info if needed
+
     res.json(requests);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -62,25 +63,27 @@ export const getMyRequests = async (req, res) => {
 export const getRequestById = async (req, res) => {
   try {
     const request = await ServiceRequest.findById(req.params.id)
-      .populate('userId', 'name email phone')
-      .populate('assignedTo', 'name email');
+      .populate("userId", "name email phone")
+      .populate("assignedTo", "name email");
 
     if (!request) {
-      return res.status(404).json({ message: 'Request not found' });
+      return res.status(404).json({ message: "Request not found" });
     }
 
     // Authorization: Only the creator, an assigned officer, or an admin can view
     if (
-      request.userId._id.toString() !== req.user._id.toString() && 
-      req.user.role === 'citizen'
+      request.userId._id.toString() !== req.user._id.toString() &&
+      req.user.role === "citizen"
     ) {
-      return res.status(403).json({ message: 'Not authorized to view this request' });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to view this request" });
     }
 
     // Fetch history
     const history = await RequestHistory.find({ requestId: request._id })
       .sort({ createdAt: 1 })
-      .populate('changedBy', 'name role');
+      .populate("changedBy", "name role");
 
     res.json({ request, history });
   } catch (error) {
