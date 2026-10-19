@@ -46,7 +46,7 @@ const Footer = () => {
           <h4 style={styles.heading}>Contact Us</h4>
           <ul style={styles.list}>
             <li style={styles.contactItem}>Murang'a Town, Kenya</li>
-            <li style={styles.contactItem}>+254 700 000 000</li>
+            <li style={styles.contactItem}>+254 742425868</li>
             <li style={styles.contactItem}>info@muranga.go.ke</li>
           </ul>
         </div>

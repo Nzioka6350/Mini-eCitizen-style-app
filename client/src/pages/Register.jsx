@@ -63,7 +63,7 @@ const Register = () => {
             <input type="text" name="name" className="form-control" onChange={handleChange} required />
           </div>
           <div className="form-group">
-            <label>Phone (M-Pesa)</label>
+            <label>Phone Number</label>
             <input type="text" name="phone" className="form-control" placeholder="0712345678" onChange={handleChange} />
           </div>
           <div className="form-group">
