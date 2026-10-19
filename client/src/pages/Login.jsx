@@ -65,6 +65,13 @@ const Login = () => {
           <div className="form-group">
             <label>Password</label>
             <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            
+            {/* FORGOT PASSWORD LINK */}
+            <div style={{ textAlign: 'right', marginTop: '0.4rem' }}>
+              <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--primary-green)', textDecoration: 'none' }}>
+                Forgot password?
+              </Link>
+            </div>
           </div>
           <button type="submit" className="btn-primary" disabled={isLoading}>
             {isLoading ? 'Signing in...' : 'Sign in'}

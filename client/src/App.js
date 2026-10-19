@@ -7,6 +7,8 @@ import MyRequests from './pages/MyRequests';
 import AdminDashboard from './pages/AdminDashboard';
 import NewRequest from './pages/NewRequest'; 
 import RequestDetail from './pages/RequestDetail';
+import ForgotPassword from './pages/ForgotPassword';   
+import ResetPassword from './pages/ResetPassword';     
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute'; 
 
@@ -20,11 +22,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           
+          {/* Password Reset (Public) */}
+          <Route path="/forgot-password" element={<ForgotPassword />} />        
+          <Route path="/reset-password/:token" element={<ResetPassword />} />  
+
           {/* Citizen Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<MyRequests />} /> 
             <Route path="/new-request" element={<NewRequest />} /> 
-            {/* Request Details accessible to both Citizens and Admins */}
             <Route path="/request/:id" element={<RequestDetail />} /> 
           </Route>
 
