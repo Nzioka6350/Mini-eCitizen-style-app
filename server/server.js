@@ -26,7 +26,7 @@ connectDB();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// We allow your production frontend, preview frontends, and localhost
+// Allow production frontend, preview frontends, and localhost
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
@@ -61,7 +61,7 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/admin', adminRoutes); 
 app.use('/api/subcounties', subCountyRoutes);
 
-// Health check
+// Health check for the backend
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
