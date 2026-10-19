@@ -11,6 +11,7 @@ const Landing = () => {
   const [services, setServices] = useState([]);
   const [subCounties, setSubCounties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(''); // <-- NEW
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +31,16 @@ const Landing = () => {
 
     fetchData();
   }, []);
+
+  // Filter services based on search query
+  const filteredServices = services.filter((service) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      service.title.toLowerCase().includes(query) ||
+      service.category.toLowerCase().includes(query) ||
+      service.description.toLowerCase().includes(query)
+    );
+  });
 
   const handleApply = (service) => {
     if (!user) {
@@ -83,7 +94,13 @@ const Landing = () => {
             Apply for permits, licences and certificates from Murang'a County. Pay online and follow every step.
           </p>
           <div style={styles.searchContainer}>
-            <input type="text" placeholder="🔍 Search e.g. business permit" style={styles.searchInput} />
+            <input 
+              type="text" 
+              placeholder="🔍 Search e.g. business permit" 
+              style={styles.searchInput}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
       </div>
@@ -92,16 +109,28 @@ const Landing = () => {
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 2rem', flex: 1 }}>
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>Available services</h2>
-          <span style={styles.serviceCount}>{services.length} services</span>
+          <span style={styles.serviceCount}>
+            {searchQuery ? `${filteredServices.length} of ${services.length} services` : `${services.length} services`}
+          </span>
         </div>
 
         {loading ? (
           <p style={{ color: 'var(--text-muted)' }}>Loading services...</p>
         ) : services.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>No services available at the moment. Please check back later.</p>
+        ) : filteredServices.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>No services found for "{searchQuery}"</p>
+            <button 
+              onClick={() => setSearchQuery('')} 
+              style={{ color: 'var(--primary-green)', background: 'none', border: 'none', fontWeight: '600', cursor: 'pointer' }}
+            >
+              Clear search
+            </button>
+          </div>
         ) : (
           <div style={styles.grid}>
-            {services.map((service) => (
+            {filteredServices.map((service) => (
               <div key={service._id} style={styles.card}>
                 <div style={styles.cardCategory}>{service.category}</div>
                 <h3 style={styles.cardTitle}>{service.title}</h3>
@@ -124,7 +153,7 @@ const Landing = () => {
           </div>
         )}
 
-        {/* 4. ABOUT US SECTION (NEW) */}
+        {/* 4. ABOUT US SECTION */}
         <section style={styles.aboutSection}>
           <div style={styles.aboutText}>
             <span style={styles.aboutBadge}>About Us</span>
@@ -205,7 +234,6 @@ const styles = {
   time: { fontSize: '0.75rem', color: 'var(--text-muted)' },
   applyBtn: { background: 'none', border: 'none', color: 'var(--primary-green)', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' },
 
-  // ---- About Us ----
   aboutSection: {
     marginTop: '5rem',
     backgroundColor: '#ffffff',
