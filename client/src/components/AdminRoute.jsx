@@ -28,7 +28,7 @@ const AdminDashboard = () => {
   // Pagination & Filter State
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('All'); // <-- NEW FILTER STATE
-  const requestsPerPage = 10;
+  const requestsPerPage = 5;
 
   const fetchData = async () => {
     setLoading(true);
