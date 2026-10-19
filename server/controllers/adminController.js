@@ -1,5 +1,6 @@
 import ServiceRequest from '../models/ServiceRequest.js';
 import RequestHistory from '../models/RequestHistory.js';
+import User from '../models/User.js'; 
 
 // @desc    Get all requests (Admin/Officer)
 // @route   GET /api/admin/requests
@@ -73,13 +74,17 @@ export const getAnalytics = async (req, res) => {
     const pending = await ServiceRequest.countDocuments({ status: 'Pending' });
     const inProgress = await ServiceRequest.countDocuments({ status: 'In Progress' });
     const resolved = await ServiceRequest.countDocuments({ status: 'Resolved' });
+    
+    // NEW: Count all users
+    const totalUsers = await User.countDocuments();
 
     res.json({
       total,
       pending,
       inProgress,
       resolved,
-      open: pending + inProgress
+      open: pending + inProgress,
+      totalUsers 
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

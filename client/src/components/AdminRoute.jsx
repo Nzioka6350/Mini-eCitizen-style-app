@@ -4,12 +4,21 @@ import { useAuth } from '../context/AuthContext';
 import AppNavbar from '../components/AppNavbar';
 import api from '../services/api';
 
+// Helper for greeting based on time of day
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+};
+
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
   const [activeTab, setActiveTab] = useState('requests');
-  const [analytics, setAnalytics] = useState({ total: 0, pending: 0, inProgress: 0, resolved: 0, open: 0 });
+  // Added totalUsers to the initial state
+  const [analytics, setAnalytics] = useState({ total: 0, pending: 0, inProgress: 0, resolved: 0, open: 0, totalUsers: 0 });
   const [requests, setRequests] = useState([]);
   const [services, setServices] = useState([]);
   const [subCounties, setSubCounties] = useState([]);        
@@ -113,8 +122,17 @@ const AdminDashboard = () => {
       
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
         
-        <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '1.5rem' }}>Admin Overview</h1>
-        
+        {/* GREETING SECTION */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-dark)', marginBottom: '0.25rem' }}>
+            {getGreeting()}, {user?.name?.split(' ')[0] || 'Admin'} 👋
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+            Here's what's happening with citizen requests today.
+          </p>
+        </div>
+
+        {/* STATS GRID (Now includes Total Users) */}
         <div style={styles.statsGrid}>
           <div style={styles.statCard}>
             <span style={styles.statLabel}>Total Requests</span>
@@ -127,6 +145,10 @@ const AdminDashboard = () => {
           <div style={styles.statCard}>
             <span style={styles.statLabel}>Resolved Cases</span>
             <span style={{ ...styles.statValue, color: '#059669' }}>{analytics.resolved}</span>
+          </div>
+          <div style={styles.statCard}>
+            <span style={styles.statLabel}>Total Users</span>
+            <span style={{ ...styles.statValue, color: '#2563eb' }}>{analytics.totalUsers}</span>
           </div>
         </div>
 
@@ -196,7 +218,6 @@ const AdminDashboard = () => {
                             <option value="Resolved">Resolved</option>
                           </select>
                           
-                          {/* THIS IS THE BUTTON THAT TAKES THE ADMIN TO THE DETAILS PAGE */}
                           <button 
                             onClick={() => navigate(`/request/${req._id}`)}
                             style={styles.viewBtn}
@@ -299,7 +320,8 @@ const AdminDashboard = () => {
 };
 
 const styles = {
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' },
+  // Adjusted minmax to 220px so all 4 cards fit nicely in a row on standard screens
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' },
   statCard: { backgroundColor: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.5rem' },
   statLabel: { fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: '500' },
   statValue: { fontSize: '2rem', fontWeight: '800', color: 'var(--text-dark)' },
