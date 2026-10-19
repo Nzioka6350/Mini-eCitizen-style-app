@@ -114,6 +114,7 @@ const AdminDashboard = () => {
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
         
         <h1 style={{ fontSize: '1.75rem', fontWeight: '800', marginBottom: '1.5rem' }}>Admin Overview</h1>
+        
         <div style={styles.statsGrid}>
           <div style={styles.statCard}>
             <span style={styles.statLabel}>Total Requests</span>
@@ -145,7 +146,6 @@ const AdminDashboard = () => {
           <p>Loading panel...</p>
 
         ) : activeTab === 'requests' ? (
-          /* =============== REQUESTS TAB =============== */
           <div style={styles.tableContainer}>
             <table style={styles.table}>
               <thead>
@@ -196,7 +196,7 @@ const AdminDashboard = () => {
                             <option value="Resolved">Resolved</option>
                           </select>
                           
-                          {/* NEW VIEW BUTTON */}
+                          {/* THIS IS THE BUTTON THAT TAKES THE ADMIN TO THE DETAILS PAGE */}
                           <button 
                             onClick={() => navigate(`/request/${req._id}`)}
                             style={styles.viewBtn}
@@ -213,7 +213,6 @@ const AdminDashboard = () => {
           </div>
 
         ) : activeTab === 'services' ? (
-          /* =============== SERVICES TAB =============== */
           <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
             <div style={styles.formCard}>
               <h3 style={{ marginBottom: '1rem' }}>Add New Service</h3>
@@ -262,7 +261,6 @@ const AdminDashboard = () => {
           </div>
 
         ) : (
-          /* =============== SUB-COUNTIES TAB =============== */
           <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
             <div style={styles.formCard}>
               <h3 style={{ marginBottom: '1rem' }}>Add Sub-county</h3>

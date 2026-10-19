@@ -21,8 +21,6 @@ function App() {
           <Route path="/" element={<Landing />} /> 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          
-          {/* Password Reset (Public) */}
           <Route path="/forgot-password" element={<ForgotPassword />} />        
           <Route path="/reset-password/:token" element={<ResetPassword />} />  
 
@@ -30,6 +28,8 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<MyRequests />} /> 
             <Route path="/new-request" element={<NewRequest />} /> 
+            
+            {/* THIS is where the admin will be allowed to go when they click View */}
             <Route path="/request/:id" element={<RequestDetail />} /> 
           </Route>
 
