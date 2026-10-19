@@ -27,7 +27,7 @@ const AdminDashboard = () => {
 
   // Pagination & Filter State
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('All'); // <-- NEW FILTER STATE
+  const [statusFilter, setStatusFilter] = useState('All'); 
   const requestsPerPage = 5;
 
   const fetchData = async () => {
@@ -126,13 +126,11 @@ const AdminDashboard = () => {
   };
 
   // --- FILTER & PAGINATION LOGIC ---
-  // 1. Filter the requests
   const filteredRequests = requests.filter(req => {
     if (statusFilter === 'All') return true;
     return req.status === statusFilter;
   });
 
-  // 2. Paginate the filtered requests
   const indexOfLastRequest = currentPage * requestsPerPage;
   const indexOfFirstRequest = indexOfLastRequest - requestsPerPage;
   const currentRequests = filteredRequests.slice(indexOfFirstRequest, indexOfLastRequest);
@@ -218,6 +216,8 @@ const AdminDashboard = () => {
               <table style={styles.table}>
                 <thead>
                   <tr style={styles.tableHeader}>
+                    {/* NEW # COLUMN */}
+                    <th style={{ ...styles.th, width: '50px' }}>#</th>
                     <th style={styles.th}>Citizen</th>
                     <th style={styles.th}>Issue Details</th>
                     <th style={styles.th}>Location</th>
@@ -228,13 +228,17 @@ const AdminDashboard = () => {
                 <tbody>
                   {filteredRequests.length === 0 ? (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                      {/* CHANGED COLSPAN TO 6 */}
+                      <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
                         No requests found matching the current filter.
                       </td>
                     </tr>
                   ) : (
-                    currentRequests.map(req => (
+                    currentRequests.map((req, index) => (
                       <tr key={req._id} style={styles.tr}>
+                        {/* NEW ROW NUMBER */}
+                        <td style={styles.td}>{indexOfFirstRequest + index + 1}</td>
+                        
                         <td style={styles.td}>
                           <div style={{ fontWeight: '600' }}>{req.userId?.name}</div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{req.userId?.email}</div>
@@ -420,7 +424,7 @@ const styles = {
   pageBtn: { backgroundColor: 'var(--primary-green)', color: 'white', border: 'none', padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' },
   pageBtnDisabled: { backgroundColor: '#e5e7eb', color: '#9ca3af', border: 'none', padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'not-allowed', fontWeight: '600', fontSize: '0.85rem' },
 
-  // NEW FILTER STYLES
+  // FILTER STYLES
   filterContainer: { display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' },
   filterLabel: { fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginRight: '0.5rem' },
   filterBtn: { backgroundColor: '#fff', color: 'var(--text-dark)', border: '1px solid var(--border-color)', padding: '0.35rem 0.8rem', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500' },
