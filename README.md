@@ -6,18 +6,56 @@ Inspired by eCitizen and built as a full-stack MERN application.
 
 ---
 
-## Table of Contents
+## 🔐 Access & Credentials
 
-1. [Features](#features)
-2. [Tech Stack](#tech-stack)
-3. [Design & Theme](#design--theme)
-4. [Architecture](#architecture)
-5. [Database Design](#database-design)
-6. [Folder Structure](#folder-structure)
-7. [Local Development Setup](#local-development-setup)
-8. [API Endpoints](#api-endpoints)
-9. [Roadmap](#roadmap)
-10. [License](#license)
+### 👤 Citizen Login
+
+Citizens do not have pre-created accounts. To access the citizen portal:
+
+1. Click **Sign in** on the top right of the landing page.
+2. Click **Create an account** at the bottom of the login form.
+3. Register with your name, email, and password.
+4. Once registered, log in to access your dashboard.
+
+### 🛡️ Administrator Login
+
+An administrator account is pre-seeded into the database for testing and management purposes.
+
+- **URL:** `/login`
+- **Email:** `admin@muranga.go.ke`
+- **Password:** `admin123`
+
+*Note: The app automatically detects your role upon login and routes you to the correct dashboard: `/admin` for admins and `/dashboard` for citizens.*
+
+---
+
+## Architecture
+
+The application uses a React frontend, an Express REST API, and MongoDB Atlas for persistent data storage.
+
+```text
+┌────────────────────────┐         HTTPS / JSON        ┌────────────────────────┐
+│                        │  ───────────────────────►   │                        │
+│  React Frontend (CRA)  │                             │  Express API (Node.js) │
+│  localhost:3000        │   ◄───────────────────────  │  localhost:5000        │
+│                        │        JWT + Responses      │                        │
+└────────────────────────┘                             └───────────┬────────────┘
+                                                                  │
+                                                                  │ Mongoose
+                                                                  ▼
+                                                      ┌────────────────────────┐
+                                                      │     MongoDB Atlas      │
+                                                      │ Users, Services,       │
+                                                      │ SubCounties, Requests  │
+                                                      └────────────────────────┘
+```
+
+### Application Design
+
+- **Authentication:** JWT tokens are stored in `localStorage` and attached to API requests through an Axios interceptor. Sessions automatically expire after 1 hour of inactivity.
+- **Role-based routing:** `ProtectedRoute` restricts access to authenticated citizen pages, while `AdminRoute` protects administrator pages.
+- **Data fetching:** `Promise.all` is used to fetch independent data concurrently on the landing page and admin dashboard.
+- **Database access:** Mongoose models define the application's data structures and relationships.
 
 ---
 
@@ -30,18 +68,21 @@ Inspired by eCitizen and built as a full-stack MERN application.
 - Apply for a service using the category, sub-county, landmark, and description.
 - View personal service requests and open/resolved request counters.
 - Track request status: `Pending → In Progress → Resolved`.
+- Recover forgotten passwords through the password reset flow.
 
 ### Admin
 
 - Secure admin panel with role-based access using `AdminRoute`.
-- Dashboard analytics showing total requests, open requests, and resolved cases.
-- View citizen requests and update their statuses.
+- Dashboard analytics showing total requests, open requests, resolved cases, and total users.
+- Personalized greeting based on the time of day.
+- View citizen requests in a paginated table and update their statuses inline.
+- View full request details and update status with a custom progress note.
 - Manage services by adding or removing services displayed on the landing page.
 - Manage sub-counties displayed on the landing page and request form.
 
 ### Public Access
 
-- Public landing page with a hero section, service catalogue, About Us section, and sub-counties served.
+- Public landing page with a hero slideshow, live search, service catalogue, About Us section, and sub-counties served.
 - Navigation links for signing in and registering.
 - Browse available services without logging in.
 
@@ -83,128 +124,75 @@ The interface is designed to feel calm, accessible, civic-focused, and represent
 | In Progress | `#2563eb` / `#dbeafe` | In-progress status badge |
 | Resolved | `#059669` / `#d1fae5` | Resolved status badge |
 
-### Typography
-
-- System font stack using fonts such as `-apple-system`, `Segoe UI`, and `Roboto`.
-- Bold headings with font weights of 700–800.
-- Body text sized between `0.85rem` and `0.95rem`.
-
-### UI Patterns
-
-- Cards with subtle borders and `12px` border radii.
-- Pill-shaped status badges and sub-county labels.
-- Consistent green call-to-action buttons.
-- Sticky navigation on authenticated pages.
-- Footer with branding, quick links, popular services, and contact information.
-- Flexbox layout to help keep the footer at the bottom of the page.
-
----
-
-## Architecture
-
-The application uses a React frontend, an Express REST API, and MongoDB Atlas for persistent data storage.
-
-```text
-┌────────────────────────┐         HTTPS / JSON        ┌────────────────────────┐
-│                        │  ───────────────────────►   │                        │
-│  React Frontend (CRA)  │                             │  Express API (Node.js) │
-│  localhost:3000        │   ◄───────────────────────  │  localhost:5000        │
-│                        │        JWT + Responses      │                        │
-└────────────────────────┘                             └───────────┬────────────┘
-                                                                  │
-                                                                  │ Mongoose
-                                                                  ▼
-                                                      ┌────────────────────────┐
-                                                      │     MongoDB Atlas      │
-                                                      │ Users, Services,       │
-                                                      │ SubCounties, Requests  │
-                                                      └────────────────────────┘
-```
-
-### Application Design
-
-- **Authentication:** JWT tokens are stored in `localStorage` and attached to API requests through an Axios interceptor.
-- **Role-based routing:** `ProtectedRoute` restricts access to authenticated citizen pages, while `AdminRoute` protects administrator pages.
-- **Data fetching:** `Promise.all` can be used to fetch independent data concurrently on the landing page and admin dashboard.
-- **Database access:** Mongoose models define the application's data structures and relationships.
-
 ---
 
 ## Database Design
 
-### Entity Relationship Overview
-
-```text
-User (1) ──────────< ServiceRequest (many)
-User (1) ──────────< RequestHistory (many)
-Service (1) ───────< ServiceRequest (many)
-SubCounty (1) ─────< ServiceRequest (many)
-ServiceRequest (1) ─< RequestHistory (many)
-```
-
 ### 1. User
 
-| Field | Type | Notes |
-|---|---|---|
-| `_id` | ObjectId | Primary key |
-| `name` | String | Required |
-| `email` | String | Required, unique |
-| `passwordHash` | String | Required; stores the bcrypt password hash |
-| `phone` | String | Optional |
-| `role` | String | `citizen`, `officer`, or `admin`; defaults to `citizen` |
-| `createdAt` / `updatedAt` | Date | Automatically managed timestamps |
+| Field | Type |
+|---|---|
+| `_id` | ObjectId |
+| `name` | String |
+| `email` | String |
+| `passwordHash` | String |
+| `phone` | String |
+| `role` | String |
+| `resetPasswordToken` | String |
+| `resetPasswordExpires` | Date |
+| `createdAt` / `updatedAt` | Date |
 
 ### 2. Service
 
-| Field | Type | Notes |
-|---|---|---|
-| `_id` | ObjectId | Primary key |
-| `category` | String | Required |
-| `title` | String | Required |
-| `description` | String | Required |
-| `fee` | String | Example: `KES 1,000` or `Free` |
-| `processingTime` | String | Example: `~30 days` |
-| `isActive` | Boolean | Defaults to `true`; supports soft deletion |
-| `createdAt` / `updatedAt` | Date | Automatically managed timestamps |
+| Field | Type |
+|---|---|
+| `_id` | ObjectId |
+| `category` | String |
+| `title` | String |
+| `description` | String |
+| `fee` | String |
+| `processingTime` | String |
+| `isActive` | Boolean |
+| `createdAt` / `updatedAt` | Date |
 
 ### 3. SubCounty
 
-| Field | Type | Notes |
-|---|---|---|
-| `_id` | ObjectId | Primary key |
-| `name` | String | Required, unique |
-| `isActive` | Boolean | Defaults to `true`; supports soft deletion |
-| `createdAt` / `updatedAt` | Date | Automatically managed timestamps |
+| Field | Type |
+|---|---|
+| `_id` | ObjectId |
+| `name` | String |
+| `isActive` | Boolean |
+| `createdAt` / `updatedAt` | Date |
 
 ### 4. ServiceRequest
 
-| Field | Type | Notes |
-|---|---|---|
-| `_id` | ObjectId | Primary key |
-| `userId` | ObjectId → `User` | Citizen submitting the request |
-| `serviceId` | ObjectId → `Service` | Requested service |
-| `title` | String | Required |
-| `category` | String | Required |
-| `location.subCounty` | String | Required |
-| `location.landmark` | String | Required |
-| `description` | String | Required |
-| `imageUrl` | String or null | Reserved for future image uploads |
-| `status` | String | `Pending`, `In Progress`, or `Resolved`; defaults to `Pending` |
-| `assignedTo` | ObjectId → `User` or null | Assigned officer |
-| `resolvedAt` | Date or null | Set when the request is resolved |
-| `createdAt` / `updatedAt` | Date | Automatically managed timestamps |
+| Field | Type |
+|---|---|
+| `_id` | ObjectId |
+| `userId` | ObjectId (ref: User) |
+| `serviceId` | ObjectId (ref: Service) |
+| `title` | String |
+| `category` | String |
+| `location.subCounty` | String |
+| `location.landmark` | String |
+| `description` | String |
+| `imageUrl` | String |
+| `status` | String |
+| `assignedTo` | ObjectId (ref: User) |
+| `resolvedAt` | Date |
+| `createdAt` / `updatedAt` | Date |
 
 ### 5. RequestHistory
 
-| Field | Type | Notes |
-|---|---|---|
-| `_id` | ObjectId | Primary key |
-| `requestId` | ObjectId → `ServiceRequest` | Related request |
-| `changedBy` | ObjectId → `User` | User who changed the status |
-| `previousStatus` | String or null | Previous status |
-| `newStatus` | String | Required |
-| `note` | String | Optional history note |
-| `createdAt` / `updatedAt` | Date | Automatically managed timestamps |
+| Field | Type |
+|---|---|
+| `_id` | ObjectId |
+| `requestId` | ObjectId (ref: ServiceRequest) |
+| `changedBy` | ObjectId (ref: User) |
+| `previousStatus` | String |
+| `newStatus` | String |
+| `note` | String |
+| `createdAt` / `updatedAt` | Date |
 
 ---
 
@@ -238,11 +226,14 @@ client/
 │   │   └── AuthContext.jsx
 │   ├── pages/
 │   │   ├── AdminDashboard.jsx
+│   │   ├── ForgotPassword.jsx
 │   │   ├── Landing.jsx
 │   │   ├── Login.jsx
 │   │   ├── MyRequests.jsx
 │   │   ├── NewRequest.jsx
-│   │   └── Register.jsx
+│   │   ├── Register.jsx
+│   │   ├── RequestDetail.jsx
+│   │   └── ResetPassword.jsx
 │   ├── services/
 │   │   └── api.js
 │   ├── App.jsx
@@ -251,15 +242,6 @@ client/
 ├── .env
 └── package.json
 ```
-
-**Important files:**
-
-- `AuthContext.jsx` — Global authentication state and login, registration, and logout functionality.
-- `api.js` — Axios configuration and JWT request interceptor.
-- `ProtectedRoute.jsx` — Restricts access to authenticated citizen pages.
-- `AdminRoute.jsx` — Restricts access to administrator pages.
-- `AdminDashboard.jsx` — Displays analytics, requests, services, and sub-county management.
-- `NewRequest.jsx` — Provides the service request submission form.
 
 ### `server/` — Backend
 
@@ -291,32 +273,17 @@ server/
 │   └── subCountyRoutes.js
 ├── scripts/
 │   ├── createAdmin.js
-│   ├── seedSubCounties.js
-│   └── checkAdmin.js
+│   └── seedSubCounties.js
 ├── .env
 ├── server.js
 └── package.json
 ```
-
-**Important files:**
-
-- `config/db.js` — MongoDB connection configuration.
-- `middleware/authMiddleware.js` — Authentication and role authorization.
-- `models/` — Mongoose schemas for application data.
-- `controllers/` — Business logic for API operations.
-- `routes/` — API route definitions.
-- `scripts/createAdmin.js` — Creates the initial administrator account.
-- `scripts/seedSubCounties.js` — Seeds initial sub-county records.
-- `scripts/checkAdmin.js` — Checks an account's administrator role.
-- `server.js` — Express application entry point.
 
 ---
 
 ## Local Development Setup
 
 ### Prerequisites
-
-Install or prepare the following:
 
 - Node.js v18 or later
 - npm
@@ -329,8 +296,6 @@ Install or prepare the following:
 git clone <your-repo-url>
 cd Mini-eCitizen-style-app
 ```
-
-Replace `<your-repo-url>` with your actual Git repository URL.
 
 ### 2. Configure the Backend
 
@@ -348,31 +313,19 @@ JWT_SECRET=your_secure_random_secret
 CLIENT_URL=http://localhost:3000
 ```
 
-Replace `your_mongodb_atlas_uri` with your MongoDB Atlas connection string and set `JWT_SECRET` to a strong, private value.
-
-Make sure your MongoDB Atlas database user and network access settings permit the connection.
-
 ### 3. Seed Initial Data
 
-From the `server/` directory, run the following scripts as appropriate:
+From the `server/` directory, run:
 
 ```bash
 node scripts/createAdmin.js
 node scripts/seedSubCounties.js
 ```
 
-Run these scripts only after configuring the environment variables and ensuring the database connection works. The scripts should be safe to rerun before doing so; check whether they create duplicates.
-
 ### 4. Start the Backend
 
 ```bash
 npm run dev
-```
-
-The API should run on:
-
-```text
-http://localhost:5000
 ```
 
 ### 5. Configure the Frontend
@@ -390,40 +343,17 @@ Create a `.env` file inside the `client/` directory:
 REACT_APP_API_URL=http://localhost:5000/api
 ```
 
-Restart the frontend whenever you change its environment variables.
-
 ### 6. Start the Frontend
 
 ```bash
 npm start
 ```
 
-Open the application in your browser:
-
-```text
-http://localhost:3000
-```
-
-### 7. Administrator Account
-
-The initial administrator account depends on the implementation of `scripts/createAdmin.js`.
-
-If you configure the script to create the following development credentials, use them for local testing:
-
-```text
-Email:    admin@muranga.go.ke
-Password: admin123
-```
-
-These are example credentials, not guaranteed defaults. Confirm the values in your script before logging in.
-
-**Security warning:** Never deploy a publicly accessible administrator account with a known default password. Use a strong password and keep database credentials, JWT secrets, and other sensitive configuration out of Git.
+Open the application in your browser at `http://localhost:3000`.
 
 ---
 
 ## API Endpoints
-
-All routes below are relative to the backend API base URL, such as `http://localhost:5000`.
 
 ### Authentication
 
@@ -432,19 +362,16 @@ All routes below are relative to the backend API base URL, such as `http://local
 | `POST` | `/api/auth/register` | Public |
 | `POST` | `/api/auth/login` | Public |
 | `GET` | `/api/auth/me` | Authenticated user |
+| `POST` | `/api/auth/forgot-password` | Public |
+| `POST` | `/api/auth/reset-password/:token` | Public |
 
-### Services
+### Services & Sub-counties
 
 | Method | Endpoint | Access |
 |---|---|---|
 | `GET` | `/api/services` | Public |
 | `POST` | `/api/services` | Admin |
 | `DELETE` | `/api/services/:id` | Admin |
-
-### Sub-counties
-
-| Method | Endpoint | Access |
-|---|---|---|
 | `GET` | `/api/subcounties` | Public |
 | `POST` | `/api/subcounties` | Admin |
 | `DELETE` | `/api/subcounties/:id` | Admin |
@@ -455,43 +382,16 @@ All routes below are relative to the backend API base URL, such as `http://local
 |---|---|---|
 | `POST` | `/api/requests` | Authenticated citizen |
 | `GET` | `/api/requests/my-requests` | Authenticated citizen |
-| `GET` | `/api/requests/:id` | Request owner, admin, or authorized officer |
-
-### Administration
-
-| Method | Endpoint | Access |
-|---|---|---|
+| `GET` | `/api/requests/:id` | Owner, admin, or officer |
 | `GET` | `/api/admin/requests` | Admin or officer |
 | `PATCH` | `/api/admin/requests/:id/status` | Admin or officer |
 | `GET` | `/api/admin/analytics` | Admin |
-
-**Note:** These endpoints describe the intended API design. Confirm that your route files and middleware implement the same paths and permissions.
-
----
-
-## Roadmap
-
-Potential improvements for future releases:
-
-- [ ] Request details page with a status timeline and history notes.
-- [ ] Image uploads using Cloudinary or Amazon S3.
-- [ ] Officer assignment interface in the admin dashboard.
-- [ ] Email notifications when request statuses change.
-- [ ] Search, filtering, and pagination for the admin requests table.
-- [ ] Map picker for request locations and coordinates.
-- [ ] Password reset and recovery functionality.
-- [ ] Audit logs for administrative actions.
-- [ ] Export service requests to CSV or PDF.
-- [ ] Improved validation, automated tests, and API documentation.
-- [ ] Production deployment with secure environment variables and CORS configuration.
 
 ---
 
 ## License
 
-This project is intended for educational and portfolio purposes.
-
-If you plan to distribute it publicly, add an appropriate open-source license, such as the MIT License, and include the corresponding `LICENSE` file.
+This project is intended for educational and portfolio purposes. If you plan to distribute it publicly, add an appropriate open-source license, such as the MIT License, and include the corresponding `LICENSE` file.
 
 ---
 
