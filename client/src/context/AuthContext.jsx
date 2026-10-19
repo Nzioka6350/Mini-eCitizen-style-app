@@ -1,5 +1,5 @@
-import { createContext, useState, useEffect, useContext } from 'react';
-import api from '../services/api';
+import { createContext, useState, useEffect, useContext } from "react";
+import api from "../services/api";
 
 const AuthContext = createContext();
 
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -18,20 +18,20 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
-    localStorage.setItem('user', JSON.stringify(response.data));
+    const response = await api.post("/auth/login", { email, password });
+    localStorage.setItem("user", JSON.stringify(response.data));
     setUser(response.data);
     return response.data;
   };
 
   const register = async (userData) => {
     // Just create the account — do NOT auto-login
-    const response = await api.post('/auth/register', userData);
+    const response = await api.post("/auth/register", userData);
     return response.data;
   };
 
   const logout = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
     setUser(null);
   };
 
