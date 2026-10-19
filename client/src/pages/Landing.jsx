@@ -11,7 +11,10 @@ const Landing = () => {
   const [services, setServices] = useState([]);
   const [subCounties, setSubCounties] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(''); // <-- NEW
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // State to toggle between showing 6 or all services
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +44,12 @@ const Landing = () => {
       service.description.toLowerCase().includes(query)
     );
   });
+
+  // Determine how many services to display
+  // Changed from 10 to 6 here
+  const displayedServices = searchQuery 
+    ? filteredServices 
+    : (showAll ? filteredServices : filteredServices.slice(0, 6));
 
   const handleApply = (service) => {
     if (!user) {
@@ -129,28 +138,42 @@ const Landing = () => {
             </button>
           </div>
         ) : (
-          <div style={styles.grid}>
-            {filteredServices.map((service) => (
-              <div key={service._id} style={styles.card}>
-                <div style={styles.cardCategory}>{service.category}</div>
-                <h3 style={styles.cardTitle}>{service.title}</h3>
-                <p style={styles.cardDescription}>{service.description}</p>
+          <>
+            <div style={styles.grid}>
+              {displayedServices.map((service) => (
+                <div key={service._id} style={styles.card}>
+                  <div style={styles.cardCategory}>{service.category}</div>
+                  <h3 style={styles.cardTitle}>{service.title}</h3>
+                  <p style={styles.cardDescription}>{service.description}</p>
 
-                <div style={styles.cardFooter}>
-                  <div style={styles.cardMeta}>
-                    <span style={styles.fee}>{service.fee}</span>
-                    <span style={styles.time}>🕒 {service.processingTime}</span>
+                  <div style={styles.cardFooter}>
+                    <div style={styles.cardMeta}>
+                      <span style={styles.fee}>{service.fee}</span>
+                      <span style={styles.time}>🕒 {service.processingTime}</span>
+                    </div>
+                    <button
+                      onClick={() => handleApply(service)}
+                      style={styles.applyBtn}
+                    >
+                      Apply →
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleApply(service)}
-                    style={styles.applyBtn}
-                  >
-                    Apply →
-                  </button>
                 </div>
+              ))}
+            </div>
+
+            {/* VIEW ALL BUTTON (Shows if more than 6 services exist) */}
+            {!searchQuery && filteredServices.length > 6 && (
+              <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+                <button 
+                  onClick={() => setShowAll(!showAll)} 
+                  style={styles.viewAllBtn}
+                >
+                  {showAll ? 'Show Less' : 'View All Services'}
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
 
         {/* 4. ABOUT US SECTION */}
@@ -233,6 +256,18 @@ const styles = {
   fee: { fontWeight: '700', fontSize: '0.85rem', color: 'var(--text-dark)' },
   time: { fontSize: '0.75rem', color: 'var(--text-muted)' },
   applyBtn: { background: 'none', border: 'none', color: 'var(--primary-green)', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' },
+
+  viewAllBtn: {
+    backgroundColor: 'var(--primary-green)',
+    color: 'white',
+    border: 'none',
+    padding: '0.75rem 2rem',
+    borderRadius: '6px',
+    fontWeight: '600',
+    fontSize: '0.95rem',
+    cursor: 'pointer',
+    boxShadow: '0 2px 6px rgba(21, 96, 59, 0.2)'
+  },
 
   aboutSection: {
     marginTop: '5rem',
