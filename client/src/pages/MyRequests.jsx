@@ -1,12 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppNavbar from '../components/AppNavbar';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+
+// Helper for greeting based on time of day
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+};
 
 const MyRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuth(); // <-- Get logged-in user
 
   useEffect(() => {
     const fetchMyRequests = async () => {
@@ -40,6 +50,16 @@ const MyRequests = () => {
       
       <main style={{ maxWidth: '1000px', margin: '0 auto', padding: '3rem 2rem' }}>
         
+        {/* GREETING */}
+        <div style={{ marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-dark)', marginBottom: '0.25rem' }}>
+            {getGreeting()}, {user?.name?.split(' ')[0] || 'there'} 👋
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+            Here are your service requests with the county.
+          </p>
+        </div>
+
         {/* Header Section */}
         <div style={styles.headerRow}>
           <div>
@@ -60,14 +80,12 @@ const MyRequests = () => {
         {loading ? (
           <p style={{ color: 'var(--text-muted)' }}>Loading your requests...</p>
         ) : requests.length === 0 ? (
-          /* EMPTY STATE - Matches your screenshot */
           <div style={styles.emptyState}>
             <div style={styles.emptyIcon}>📭</div>
             <h3 style={styles.emptyTitle}>No requests yet</h3>
             <p style={styles.emptyText}>Report your first issue to the county.</p>
           </div>
         ) : (
-          /* REQUESTS LIST */
           <div style={styles.list}>
             {requests.map((request) => (
               <div 
