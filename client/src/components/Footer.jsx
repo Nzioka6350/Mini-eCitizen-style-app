@@ -61,6 +61,7 @@ const Footer = () => {
           <div style={styles.legalLinks}>
             <span style={styles.legalLink}>Privacy Policy</span>
             <span style={styles.legalLink}>Terms of Service</span>
+            <span style={styles.legalLink}>Designed by James Nzioka Mutua</span>
           </div>
         </div>
       </div>
