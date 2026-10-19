@@ -25,9 +25,10 @@ const AdminDashboard = () => {
   const [formData, setFormData] = useState({ category: '', title: '', description: '', fee: '', processingTime: '' });
   const [loading, setLoading] = useState(true);
 
-  // Pagination State
+  // Pagination & Filter State
   const [currentPage, setCurrentPage] = useState(1);
-  const requestsPerPage = 5; // 
+  const [statusFilter, setStatusFilter] = useState('All'); // <-- NEW FILTER STATE
+  const requestsPerPage = 10;
 
   const fetchData = async () => {
     setLoading(true);
@@ -57,10 +58,10 @@ const AdminDashboard = () => {
     fetchData();
   }, [user, navigate]);
 
-  // Reset to page 1 whenever the requests list changes (e.g., new request added)
+  // Reset to page 1 whenever the filter changes or requests update
   useEffect(() => {
     setCurrentPage(1);
-  }, [requests]);
+  }, [statusFilter, requests]);
 
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
@@ -124,11 +125,18 @@ const AdminDashboard = () => {
     return {};
   };
 
-  // --- PAGINATION LOGIC ---
+  // --- FILTER & PAGINATION LOGIC ---
+  // 1. Filter the requests
+  const filteredRequests = requests.filter(req => {
+    if (statusFilter === 'All') return true;
+    return req.status === statusFilter;
+  });
+
+  // 2. Paginate the filtered requests
   const indexOfLastRequest = currentPage * requestsPerPage;
   const indexOfFirstRequest = indexOfLastRequest - requestsPerPage;
-  const currentRequests = requests.slice(indexOfFirstRequest, indexOfLastRequest);
-  const totalPages = Math.ceil(requests.length / requestsPerPage);
+  const currentRequests = filteredRequests.slice(indexOfFirstRequest, indexOfLastRequest);
+  const totalPages = Math.ceil(filteredRequests.length / requestsPerPage);
 
   const nextPage = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -137,7 +145,7 @@ const AdminDashboard = () => {
   const prevPage = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
-  // -------------------------
+  // ---------------------------------
 
   return (
     <div style={{ backgroundColor: 'var(--bg-color)', minHeight: '100vh' }}>
@@ -192,6 +200,20 @@ const AdminDashboard = () => {
 
         ) : activeTab === 'requests' ? (
           <>
+            {/* FILTER BUTTONS */}
+            <div style={styles.filterContainer}>
+              <span style={styles.filterLabel}>Filter by Status:</span>
+              {['All', 'Pending', 'In Progress', 'Resolved'].map(filter => (
+                <button
+                  key={filter}
+                  onClick={() => setStatusFilter(filter)}
+                  style={statusFilter === filter ? styles.filterBtnActive : styles.filterBtn}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+
             <div style={styles.tableContainer}>
               <table style={styles.table}>
                 <thead>
@@ -204,14 +226,13 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {requests.length === 0 ? (
+                  {filteredRequests.length === 0 ? (
                     <tr>
                       <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                        No requests have been made yet.
+                        No requests found matching the current filter.
                       </td>
                     </tr>
                   ) : (
-                    // Render currentRequests instead of requests
                     currentRequests.map(req => (
                       <tr key={req._id} style={styles.tr}>
                         <td style={styles.td}>
@@ -259,10 +280,10 @@ const AdminDashboard = () => {
             </div>
 
             {/* PAGINATION CONTROLS */}
-            {requests.length > 0 && (
+            {filteredRequests.length > 0 && (
               <div style={styles.paginationContainer}>
                 <span style={styles.pageInfo}>
-                  Showing {indexOfFirstRequest + 1}-{Math.min(indexOfLastRequest, requests.length)} of {requests.length} requests
+                  Showing {indexOfFirstRequest + 1}-{Math.min(indexOfLastRequest, filteredRequests.length)} of {filteredRequests.length} requests
                 </span>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <button 
@@ -394,40 +415,16 @@ const styles = {
   deleteBtn: { backgroundColor: '#fee2e2', color: '#ef4444', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.8rem' },
 
   // PAGINATION STYLES
-  paginationContainer: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginTop: '1.5rem', 
-    padding: '1rem', 
-    backgroundColor: '#fff',
-    borderRadius: '8px',
-    border: '1px solid var(--border-color)'
-  },
-  pageInfo: { 
-    fontSize: '0.85rem', 
-    color: 'var(--text-muted)' 
-  },
-  pageBtn: { 
-    backgroundColor: 'var(--primary-green)', 
-    color: 'white', 
-    border: 'none', 
-    padding: '0.4rem 1rem', 
-    borderRadius: '4px', 
-    cursor: 'pointer', 
-    fontWeight: '600', 
-    fontSize: '0.85rem' 
-  },
-  pageBtnDisabled: { 
-    backgroundColor: '#e5e7eb', 
-    color: '#9ca3af', 
-    border: 'none', 
-    padding: '0.4rem 1rem', 
-    borderRadius: '4px', 
-    cursor: 'not-allowed', 
-    fontWeight: '600', 
-    fontSize: '0.85rem' 
-  }
+  paginationContainer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', padding: '1rem', backgroundColor: '#fff', borderRadius: '8px', border: '1px solid var(--border-color)' },
+  pageInfo: { fontSize: '0.85rem', color: 'var(--text-muted)' },
+  pageBtn: { backgroundColor: 'var(--primary-green)', color: 'white', border: 'none', padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem' },
+  pageBtnDisabled: { backgroundColor: '#e5e7eb', color: '#9ca3af', border: 'none', padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'not-allowed', fontWeight: '600', fontSize: '0.85rem' },
+
+  // NEW FILTER STYLES
+  filterContainer: { display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' },
+  filterLabel: { fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginRight: '0.5rem' },
+  filterBtn: { backgroundColor: '#fff', color: 'var(--text-dark)', border: '1px solid var(--border-color)', padding: '0.35rem 0.8rem', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500' },
+  filterBtnActive: { backgroundColor: 'var(--primary-green)', color: 'white', border: '1px solid var(--primary-green)', padding: '0.35rem 0.8rem', borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600' }
 };
 
 export default AdminDashboard;
