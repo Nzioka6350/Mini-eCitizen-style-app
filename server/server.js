@@ -63,14 +63,7 @@ app.use('/api/subcounties', subCountyRoutes);
 
 // Health check
 app.get('/', (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    message: 'Murang\'a e-Huduma API is running smoothly.',
-    environment: process.env.NODE_ENV || 'development',
-    uptime: `${Math.floor(process.uptime())} seconds`,
-    timestamp: new Date().toISOString(),
-    version: '1.0.0'
-  });
+  res.send('API is running...');
 });
 
 // Only listen locally, Vercel handles the server in production
