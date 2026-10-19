@@ -1,12 +1,16 @@
+// 1. Service Model
+// 2. Represents a county service (e.g., permit, licence) that citizens can apply for.
+// 3. Admin users manage this list from the dashboard (add, remove via isActive flag).
+
 import mongoose from 'mongoose';
 
 const serviceSchema = new mongoose.Schema({
   category: { type: String, required: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
-  fee: { type: String, default: 'Free' }, // e.g., 'KES 1,000' or 'Free'
-  processingTime: { type: String, default: 'N/A' }, // e.g., '~30 days'
-  isActive: { type: Boolean, default: true } // Admin can hide services instead of deleting
+  fee: { type: String, default: 'Free' },
+  processingTime: { type: String, default: 'N/A' },
+  isActive: { type: Boolean, default: true } 
 }, { timestamps: true });
 
 export default mongoose.model('Service', serviceSchema);
